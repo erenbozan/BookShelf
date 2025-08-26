@@ -54,6 +54,9 @@ public class User implements UserDetails {
     @Builder.Default
     private boolean credentialsNonExpired = true;
     
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private FavoriteList favoriteList;
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
