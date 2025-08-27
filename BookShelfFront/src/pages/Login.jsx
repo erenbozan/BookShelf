@@ -11,7 +11,8 @@ export default function LoginPage() {
   const existingToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const existingRole = typeof window !== 'undefined' ? localStorage.getItem('role') : null
   if (existingToken) {
-    return <Navigate to={existingRole === 'ADMIN' ? '/admin' : '/'} replace />
+    const roleVal = String(existingRole || '').toUpperCase()
+    return <Navigate to={roleVal.includes('ADMIN') ? '/admin' : '/homepage'} replace />
   }
 
   async function handleSubmit(e) {
@@ -27,7 +28,7 @@ export default function LoginPage() {
       if (roleVal.includes('ADMIN')) {
         navigate('/admin', { replace: true })
       } else {
-        navigate('/', { replace: true })
+        navigate('/homepage', { replace: true })
       }
     } catch (err) {
       setError(err.message || 'Giriş başarısız')

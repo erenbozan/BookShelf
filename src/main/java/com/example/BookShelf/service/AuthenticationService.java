@@ -4,8 +4,10 @@ import com.example.BookShelf.dto.AuthResponse;
 import com.example.BookShelf.dto.LoginRequest;
 import com.example.BookShelf.dto.RegisterRequest;
 import com.example.BookShelf.entity.Role;
+import com.example.BookShelf.entity.FavoriteList;
 import com.example.BookShelf.entity.User;
 import com.example.BookShelf.repository.UserRepository;
+import com.example.BookShelf.repository.FavoriteListRepository;
 import com.example.BookShelf.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,6 +24,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final FavoriteListRepository favoriteListRepository;
     
     public AuthResponse register(RegisterRequest request) {
         // Check if username or email already exists
@@ -44,6 +47,11 @@ public class AuthenticationService {
                 .build();
         
         userRepository.save(user);
+        // Create and link an empty FavoriteList for the new user
+        FavoriteList favoriteList = FavoriteList.builder()
+                .user(user)
+                .build();
+        favoriteListRepository.save(favoriteList);
         
         // Generate token
         String token = jwtUtil.generateToken(user);

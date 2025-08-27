@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Frontend node modules
+BookShelfFront/node_modules/
+BookShelfFront/.vite/
+
+# Local environment secrets (do not commit real credentials)
+src/main/resources/application.properties

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getAdminDashboard, createAdminBook } from '../api'
+import { getAdminDashboard, createAdminBook, getAdminUsers } from '../api'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -10,6 +10,12 @@ export default function AdminDashboard() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [bookForm, setBookForm] = useState({ title: '', author: '', description: '', publishedYear: '' })
+
+  // Users modal state
+  const [showUsersModal, setShowUsersModal] = useState(false)
+  const [usersLoading, setUsersLoading] = useState(false)
+  const [usersError, setUsersError] = useState('')
+  const [users, setUsers] = useState([])
 
   async function handleFetch() {
     setError('')
@@ -54,6 +60,24 @@ export default function AdminDashboard() {
           {loading ? 'Yükleniyor...' : 'Dashboard verisini getir'}
         </button>
         <button onClick={() => setShowAddModal(true)} style={{ background: '#2563eb', color: '#fff' }}>Kitap Ekle</button>
+        <button
+          onClick={async () => {
+            setUsersError('')
+            setShowUsersModal(true)
+            setUsersLoading(true)
+            try {
+              const list = await getAdminUsers()
+              setUsers(Array.isArray(list) ? list : [])
+            } catch (err) {
+              setUsersError(err.message || 'Kullanıcılar yüklenemedi')
+            } finally {
+              setUsersLoading(false)
+            }
+          }}
+          style={{ background: '#0ea5e9', color: '#fff' }}
+        >
+          Kullanıcıları Listele
+        </button>
       </div>
       {error && <div style={{ color: 'tomato', marginBottom: 12 }}>{error}</div>}
       {data && (
@@ -65,6 +89,71 @@ export default function AdminDashboard() {
             <summary>Ham JSON</summary>
             <pre style={{ overflow: 'auto', background: '#f5f5f5', color: '#111', padding: 12, borderRadius: 8 }}>{JSON.stringify(data, null, 2)}</pre>
           </details>
+        </div>
+      )}
+
+      {showUsersModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ width: 720, maxHeight: '80vh', overflow: 'hidden', background: '#fff', color: '#111', borderRadius: 12, padding: 16, boxShadow: '0 10px 25px rgba(0,0,0,.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h3 style={{ margin: 0 }}>Kullanıcı Listesi</h3>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={async () => {
+                  setUsersError('')
+                  setUsersLoading(true)
+                  try {
+                    const list = await getAdminUsers()
+                    setUsers(Array.isArray(list) ? list : [])
+                  } catch (err) {
+                    setUsersError(err.message || 'Kullanıcılar yüklenemedi')
+                  } finally {
+                    setUsersLoading(false)
+                  }
+                }} style={{ background: '#e5e7eb', color: '#111' }}>Yenile</button>
+                <button onClick={() => setShowUsersModal(false)} style={{ background: '#e5e7eb', color: '#111' }}>Kapat</button>
+              </div>
+            </div>
+            {usersError && <div style={{ color: 'tomato', marginBottom: 12 }}>{usersError}</div>}
+            {usersLoading ? (
+              <div style={{ padding: 16 }}>Yükleniyor...</div>
+            ) : (
+              <div style={{ overflow: 'auto', maxHeight: '65vh', border: '1px solid #e5e7eb', borderRadius: 8 }}>
+                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                  <thead>
+                    <tr style={{ background: '#f9fafb' }}>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid #e5e7eb' }}>ID</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid #e5e7eb' }}>Kullanıcı Adı</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid #e5e7eb' }}>Ad Soyad</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid #e5e7eb' }}>Email</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid #e5e7eb' }}>Rol</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid #e5e7eb' }}>Durum</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u.id}>
+                        <td style={{ padding: '10px 12px', borderBottom: '1px solid #f1f5f9' }}>{u.id}</td>
+                        <td style={{ padding: '10px 12px', borderBottom: '1px solid #f1f5f9' }}>{u.username}</td>
+                        <td style={{ padding: '10px 12px', borderBottom: '1px solid #f1f5f9' }}>{[u.firstName, u.lastName].filter(Boolean).join(' ')}</td>
+                        <td style={{ padding: '10px 12px', borderBottom: '1px solid #f1f5f9' }}>{u.email}</td>
+                        <td style={{ padding: '10px 12px', borderBottom: '1px solid #f1f5f9' }}>
+                          <span style={{ padding: '2px 8px', borderRadius: 999, background: u.role === 'ADMIN' ? '#fef3c7' : '#e0f2fe', color: '#111' }}>{u.role}</span>
+                        </td>
+                        <td style={{ padding: '10px 12px', borderBottom: '1px solid #f1f5f9' }}>
+                          {u.enabled ? 'Aktif' : 'Pasif'}
+                        </td>
+                      </tr>
+                    ))}
+                    {Array.isArray(users) && users.length === 0 && !usersLoading && !usersError && (
+                      <tr>
+                        <td colSpan={6} style={{ padding: 16, textAlign: 'center', color: '#6b7280' }}>Kayıt bulunamadı</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

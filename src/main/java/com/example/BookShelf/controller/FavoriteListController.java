@@ -1,6 +1,8 @@
 package com.example.BookShelf.controller;
 
 import com.example.BookShelf.entity.Book;
+import com.example.BookShelf.entity.User;
+import com.example.BookShelf.repository.UserRepository;
 import com.example.BookShelf.entity.FavoriteList;
 import com.example.BookShelf.service.FavoriteListService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.Set;
 public class FavoriteListController {
     
     private final FavoriteListService favoriteListService;
+    private final UserRepository userRepository;
     
     // Kullanıcının favori listesini getir
     @GetMapping
@@ -25,11 +28,9 @@ public class FavoriteListController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            
-            // Burada username'den user ID'yi bulmanız gerekir
-            // Şimdilik basit bir implementasyon
-            Long userId = 1L; // Gerçek uygulamada authentication'dan alınmalı
-            
+            Long userId = userRepository.findByUsername(username)
+                    .map(User::getId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             FavoriteList favoriteList = favoriteListService.getUserFavoriteList(userId);
             return ResponseEntity.ok(favoriteList);
         } catch (Exception e) {
@@ -43,9 +44,9 @@ public class FavoriteListController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            
-            Long userId = 1L; // Gerçek uygulamada authentication'dan alınmalı
-            
+            Long userId = userRepository.findByUsername(username)
+                    .map(User::getId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             Set<Book> favoriteBooks = favoriteListService.getUserFavoriteBooks(userId);
             return ResponseEntity.ok(favoriteBooks);
         } catch (Exception e) {
@@ -59,9 +60,9 @@ public class FavoriteListController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            
-            Long userId = 1L; // Gerçek uygulamada authentication'dan alınmalı
-            
+            Long userId = userRepository.findByUsername(username)
+                    .map(User::getId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             FavoriteList updatedList = favoriteListService.addBookToFavorites(userId, bookId);
             return ResponseEntity.ok(updatedList);
         } catch (Exception e) {
@@ -75,9 +76,9 @@ public class FavoriteListController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            
-            Long userId = 1L; // Gerçek uygulamada authentication'dan alınmalı
-            
+            Long userId = userRepository.findByUsername(username)
+                    .map(User::getId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             FavoriteList updatedList = favoriteListService.removeBookFromFavorites(userId, bookId);
             return ResponseEntity.ok(updatedList);
         } catch (Exception e) {
@@ -91,9 +92,9 @@ public class FavoriteListController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            
-            Long userId = 1L; // Gerçek uygulamada authentication'dan alınmalı
-            
+            Long userId = userRepository.findByUsername(username)
+                    .map(User::getId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             favoriteListService.clearFavoriteList(userId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
@@ -107,9 +108,9 @@ public class FavoriteListController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            
-            Long userId = 1L; // Gerçek uygulamada authentication'dan alınmalı
-            
+            Long userId = userRepository.findByUsername(username)
+                    .map(User::getId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             boolean isFavorite = favoriteListService.isBookInFavorites(userId, bookId);
             return ResponseEntity.ok(isFavorite);
         } catch (Exception e) {
@@ -123,13 +124,19 @@ public class FavoriteListController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            
-            Long userId = 1L; // Gerçek uygulamada authentication'dan alınmalı
-            
+            Long userId = userRepository.findByUsername(username)
+                    .map(User::getId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             int size = favoriteListService.getFavoriteListSize(userId);
             return ResponseEntity.ok(size);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    // Alias: /api/favorites/book (tekil) -> kullanıcı favori kitapları
+    @GetMapping("/book")
+    public ResponseEntity<Set<Book>> getUserFavoriteBooksAlias() {
+        return getUserFavoriteBooks();
     }
 }

@@ -45,6 +45,17 @@ export async function createAdminBook({ title, author, description, publishedYea
   return res.json();
 }
 
+export async function getAdminUsers() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const res = await fetch(`${BASE}/admin/users`, {
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+    },
+  });
+  if (!res.ok) throw await buildError(res);
+  return res.json();
+}
+
 async function buildError(res) {
   let data;
   try {
@@ -56,4 +67,28 @@ async function buildError(res) {
   return new Error(message);
 }
 
+
+export async function getAllBooks() {
+  const res = await fetch(`${BASE}/books`);
+  if (!res.ok) throw await buildError(res);
+  return res.json();
+}
+
+export async function getBooksByTitle(title) {
+  const q = encodeURIComponent(title || '');
+  const res = await fetch(`${BASE}/books/search/title?title=${q}`);
+  if (!res.ok) throw await buildError(res);
+  return res.json();
+}
+
+export async function getFavoriteBooks() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const res = await fetch(`${BASE}/favorites/books`, {
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+    },
+  });
+  if (!res.ok) throw await buildError(res);
+  return res.json();
+}
 

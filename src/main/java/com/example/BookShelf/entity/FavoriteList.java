@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -16,14 +19,18 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "favorite_lists")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class FavoriteList {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
     
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JsonIgnore
+    @ToString.Exclude
     private User user;
     
     @ManyToMany(fetch = FetchType.LAZY)

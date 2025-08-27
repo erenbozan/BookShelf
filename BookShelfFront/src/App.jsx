@@ -3,6 +3,7 @@ import './App.css'
 import LoginPage from './pages/Login'
 import RegisterPage from './pages/Register'
 import AdminDashboard from './pages/AdminDashboard'
+import Homepage from './pages/Homepage'
 
 function Home() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
@@ -41,8 +42,11 @@ export default function App() {
         <Route path="/admin" element={
           (typeof window !== 'undefined' && localStorage.getItem('token') && String(localStorage.getItem('role') || '').toUpperCase().includes('ADMIN'))
             ? <AdminDashboard />
-            : <Navigate to="/login" replace />
+            : (typeof window !== 'undefined' && localStorage.getItem('token'))
+              ? <Navigate to="/homepage" replace />
+              : <Navigate to="/login" replace />
         } />
+        <Route path="/homepage" element={<Homepage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
