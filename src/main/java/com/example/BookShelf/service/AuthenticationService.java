@@ -51,6 +51,7 @@ public class AuthenticationService {
         return AuthResponse.builder()
                 .token(token)
                 .username(user.getUsername())
+                .role(user.getRole().name())
                 .message("User registered successfully")
                 .build();
     }
@@ -69,6 +70,7 @@ public class AuthenticationService {
         return AuthResponse.builder()
                 .token(token)
                 .username(user.getUsername())
+                .role(user.getRole().name())
                 .message("Login successful")
                 .build();
     }
